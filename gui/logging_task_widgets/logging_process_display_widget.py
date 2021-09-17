@@ -1,11 +1,13 @@
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 
+from ros_logger_scripts import run_ros_logger
 
 class LoggingProcessDisplayWidget(QWidget):
     def __init__(self, logging_manage_object):
         super(LoggingProcessDisplayWidget, self).__init__()
         self.logging_manage_object = logging_manage_object
+        self.directory_to_save_logs = str()
         self.selected_topic_list = list()
         self.__init_widget()
 
@@ -48,3 +50,7 @@ class LoggingProcessDisplayWidget(QWidget):
     def stop_log_recording(self):
         self.logging_manage_object.go_to_logging_finish_widget()
         print('stop')
+
+    def run_logging_process(self):
+        run_ros_logger.run(self.selected_topic_list, self.directory_to_save_logs)
+

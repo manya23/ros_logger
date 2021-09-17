@@ -8,6 +8,10 @@ from gui.windows_parameters_description import plain_text_edit_wights, plain_tex
 
 class LoggingStartWidget(QWidget):
     def __init__(self, logging_manage_object):
+        """
+        selected_topic_list - list with dictionaries that contains info about topic that had to be listened
+        :param logging_manage_object:
+        """
         super(LoggingStartWidget, self).__init__()
         self.logging_manage_object = logging_manage_object
         self.selected_topic_list = list()

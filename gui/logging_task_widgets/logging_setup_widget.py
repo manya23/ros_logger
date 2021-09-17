@@ -139,9 +139,6 @@ class LoggingSetupWidget(QWidget):
     def __go_to_previous_widget(self):
         self.clean_table()
         self.logging_manage_object.go_to_get_topic_list_widget()
-        # widget_index = logging_manage_widget.SubWidgetIndexes.CHOOSE_TOPIC_LAYOUT
-        # self.logging_start_layout.setCurrentIndex(widget_index.value)
-        # logging_manage_widget.go_to_get_topic_list_widget()
 
 # if __name__ == '__main__':
 #     import sys

@@ -45,7 +45,7 @@ class LoggingManageWidget(QWidget):
         self.log_manage_widget_layout.setCurrentIndex(LoggerWidgetIndexes.SETUP_LOGGING_LAYOUT.value)
 
     def go_to_logging_start_widget(self, set_data=False):
-        print('data is', set_data)
+        # print('data is', set_data)
         self.logging_start_widget.selected_topic_list = set_data
         self.logging_start_widget.display_selected_topic_list()
         self.log_manage_widget_layout.setCurrentIndex(LoggerWidgetIndexes.START_LOGGING_LAYOUT.value)
@@ -54,6 +54,8 @@ class LoggingManageWidget(QWidget):
         print('im go to logging process')
         self.logging_process_display_widget.log_save_directory_display.setPlainText(self.logging_start_widget.log_save_directory)
         self.logging_process_display_widget.selected_topic_list = self.logging_start_widget.selected_topic_list
+        self.logging_process_display_widget.directory_to_save_logs = self.logging_start_widget.log_save_directory
+        self.logging_process_display_widget.run_logging_process()
         self.log_manage_widget_layout.setCurrentIndex(LoggerWidgetIndexes.LOGGING_PROCESS_DISPLAY_LAYOUT.value)
 
     def go_to_logging_finish_widget(self, set_data=False):
