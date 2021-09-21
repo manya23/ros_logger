@@ -8,8 +8,9 @@ from gui.widgets_indexes import WidgetIndexes
 
 
 class MainApp (QMainWindow):
-    def __init__(self):
+    def __init__(self, app_main_process):
         super().__init__()
+        self.app_main_process = app_main_process
         # create objects of 3 main widgets
         self.choose_activity_widget = choose_activity_widget.ChooseActivityWidget()
         # self.log_writing_widget = log_writing_widget.LogWritingWidget()
@@ -51,6 +52,9 @@ class MainApp (QMainWindow):
     def set_current_main_window_widget(self, desired_widget_index):
         self.switch_layout.setCurrentIndex(desired_widget_index.value)
 
+    def quit_app(self):
+        self.app_main_process.quit_app()
+
     # put window to the middle of screen
     def center(self):
         qr = self.frameGeometry()
@@ -59,10 +63,19 @@ class MainApp (QMainWindow):
         self.move(qr.topLeft())
 
 
+class RosLoggerApplication:
+    def __init__(self):
+        # Create the Qt Application
+        self.app = QApplication(sys.argv)
+        # Create and show the form
+        self.app_main_window = MainApp(self)
+        # Run the main Qt loop
+        sys.exit(self.app.exec_())
+
+    def quit_app(self):
+        self.app.quit()
+
+
 if __name__ == '__main__':
-    # Create the Qt Application
-    app = QApplication(sys.argv)
-    # Create and show the form
-    app_main_window = MainApp()
-    # Run the main Qt loop
-    sys.exit(app.exec_())
+    # Create the Ros Logger Application
+    app = RosLoggerApplication()

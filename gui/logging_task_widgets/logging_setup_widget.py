@@ -93,13 +93,10 @@ class LoggingSetupWidget(QWidget):
         for row in range(self.topic_list_display_table.rowCount()):
             self.topic_list_display_table.item(row, 0).setCheckState(QtCore.Qt.Unchecked)
 
-    def __fill_topic_list_display_table(self, config_file_path):
+    def __fill_topic_list_display_table(self, config):
         self.table_len = int()
-        # load info from config file
-        with open(config_file_path) as json_file:
-            config = json.load(json_file)
         # fill table fields with info from config file
-        for topic_describe_dict in config["traced_internal_topic_list"]:
+        for topic_describe_dict in config:
             # TODO: заменить структуру конфига - убрать словарь с ключом "traced_internal_topic_list"
             row_pose = self.topic_list_display_table.rowCount()
             self.topic_list_display_table.insertRow(row_pose)
@@ -109,13 +106,18 @@ class LoggingSetupWidget(QWidget):
             self.table_len += 1
         print('table len', self.table_len)
 
-    def fill_table(self, config_file_path):
-        # call dialog window to choose directory path and save path to variable\
-        try:
-            self.__fill_topic_list_display_table(config_file_path)
-            print('config file path: ', self.config_file_path)
-        except:
-            pass
+    def fill_table(self, config_file):
+        # in case when config file is path to json file, first we have to read config file
+        if type(config_file) == str:
+            # load info from config file
+            with open(config_file) as json_file:
+                config = json.load(json_file)
+            # TODO: убрать ["traced_internal_topic_list"]
+            self.__fill_topic_list_display_table(config["traced_internal_topic_list"])
+            print('CONFIG FROM FILE',config["traced_internal_topic_list"])
+        # in other way we just pass config_file variable to fill table
+        else:
+            self.__fill_topic_list_display_table(config_file)
 
     def clean_table(self):
         # clear table

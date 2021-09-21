@@ -4,6 +4,7 @@ from gui.dialog_windows import choose_file_dialog
 import ros_logger_gui
 # from gui.main_window_widgets import logging_manage_widget
 from gui.widgets_indexes import LoggerWidgetIndexes
+from ros_logger_scripts import get_ros_topic_list
 
 
 class GetTopicListWidget(QWidget):
@@ -26,7 +27,7 @@ class GetTopicListWidget(QWidget):
 
         self.display_visible_topics_button = QPushButton('Display accessible topics')
         self.display_visible_topics_button.clicked.connect(self.display_visible_topics)
-        self.display_visible_topics_button.setEnabled(False)
+        # self.display_visible_topics_button.setEnabled(False)
 
         self.back_button = QPushButton('Back')
         self.back_button.clicked.connect(self.go_to_previous_widget)
@@ -53,6 +54,14 @@ class GetTopicListWidget(QWidget):
         self.logging_start_layout.setCurrentIndex(self.logging_start_widget_index.value)
 
     def display_visible_topics(self):
+        self.topic_info_list = get_ros_topic_list.get_topic_list_via_nodes()
+        print('CONFIG FROM LIST',self.topic_info_list)
+        try:
+            self.setup_widget_fill_table_func(self.topic_info_list)
+        except:
+            pass
+        self.logging_start_widget_index = LoggerWidgetIndexes.SETUP_LOGGING_LAYOUT
+        self.logging_start_layout.setCurrentIndex(self.logging_start_widget_index.value)
         print('im listening')
 
     def go_to_previous_widget(self):

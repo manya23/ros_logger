@@ -55,6 +55,7 @@ class LoggingManageWidget(QWidget):
         self.logging_process_display_widget.log_save_directory_display.setPlainText(self.logging_start_widget.log_save_directory)
         self.logging_process_display_widget.selected_topic_list = self.logging_start_widget.selected_topic_list
         self.logging_process_display_widget.directory_to_save_logs = self.logging_start_widget.log_save_directory
+        # TODO: это перенести в поток 
         self.logging_process_display_widget.run_logging_process()
         self.log_manage_widget_layout.setCurrentIndex(LoggerWidgetIndexes.LOGGING_PROCESS_DISPLAY_LAYOUT.value)
 

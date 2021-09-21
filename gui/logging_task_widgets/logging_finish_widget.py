@@ -23,11 +23,18 @@ class LoggingProcessDisplayWidget(QWidget):
         self.back_button = QPushButton('Back to start menu')
         self.back_button.clicked.connect(self.go_to_choose_activity_widget)
 
+        self.quit_button = QPushButton('Quit')
+        self.quit_button.clicked.connect(self.quit_app)
+
+        manage_buttons_layout = QHBoxLayout()
+        manage_buttons_layout.addWidget(self.quit_button, alignment=Qt.AlignRight)
+        manage_buttons_layout.addWidget(self.back_button, alignment=Qt.AlignRight)
+
         self.log_finish_layout = QVBoxLayout()
         self.log_finish_layout.addWidget(widget_info_label)
         self.log_finish_layout.addWidget(self.log_save_directory_display)
         self.log_finish_layout.addStretch(1)
-        self.log_finish_layout.addWidget(self.back_button, alignment=Qt.AlignRight)
+        self.log_finish_layout.addLayout(manage_buttons_layout)
 
         self.setLayout(self.log_finish_layout)
 
@@ -37,3 +44,6 @@ class LoggingProcessDisplayWidget(QWidget):
 
         self.logging_manage_object.setup_logging_widget.clean_table()
         self.logging_manage_object.go_to_get_topic_list_widget()
+
+    def quit_app(self):
+        self.main_app_object.quit_app()

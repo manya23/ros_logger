@@ -1,6 +1,6 @@
 # coding=utf8
 from rcl_interfaces import msg
-import argparse
+# import argparse
 import rclpy
 import time
 import os
@@ -11,15 +11,16 @@ import sys
 from datetime import date
 
 from rclpy.node import Node
-from rclpy.qos import qos_profile_sensor_data
-import std_msgs.msg
-import gis_rtk_msgs.msg
-import rtp_msgs.msg
-import marker_msgs.msg
-import nav_msgs.msg
-import geometry_msgs.msg
-import sensor_msgs.msg
-import visualization_msgs.msg
+# from rclpy.qos import qos_profile_sensor_data
+import rclpy.qos
+# import std_msgs.msg
+# import gis_rtk_msgs.msg
+# import rtp_msgs.msg
+# import marker_msgs.msg
+# import nav_msgs.msg
+# import geometry_msgs.msg
+# import sensor_msgs.msg
+# import visualization_msgs.msg
 from copy import deepcopy
 from rtp_communication import rtp_analyzer
 import threading
@@ -36,6 +37,8 @@ class MyTopic:
         self.msg_list = list()
         self.logs_path = logs_path
         print("topic %s init witch type %s" % (self.topic_name, self.topic_type))
+
+        self.pause_pressed = False
 
         self._topic_name_copy = self.topic_name
         self._topic_name_copy = self._topic_name_copy.replace('/', '_')
@@ -77,7 +80,10 @@ class MyTopic:
                 self.msg_list.clear()
             except:
                 continue
-            self.__dump_topic_data_to_file(temp_msg_list)
+            # TODO: чтоб сделать паузу, тормозить нужно этот процесс
+            if not self.pause_pressed:
+                print('logging process is running')
+                self.__dump_topic_data_to_file(temp_msg_list)
             time.sleep(1.0)
 
     def timer_callback(self):
@@ -96,17 +102,18 @@ class MyTopic:
         with open('{0}/{1}.txt'.format(folder_name, self.static_data_time + self._topic_name_copy), 'a') as file:
 
             # сообщения типа OccupancyGrid зписываются с частотой 1/10
-            if self.topic_type == nav_msgs.msg.OccupancyGrid:
-                pass
-                for msg_num, msg in enumerate(msg_list):
-                    if (msg_num % 10) == 0:
-                        msg_attr_in_json = json.dumps({msg[0]: message_to_ordereddict(msg[1])})
-                        file.write(msg_attr_in_json)
+            # if self.topic_type == nav_msgs.msg.OccupancyGrid:
+            #     pass
+            #     for msg_num, msg in enumerate(msg_list):
+            #         if (msg_num % 10) == 0:
+            #             msg_attr_in_json = json.dumps({msg[0]: message_to_ordereddict(msg[1])})
+            #             file.write(msg_attr_in_json)
+            #
+            # else:
 
-            else:
-                for msg in msg_list:
-                    msg_attr_in_json = json.dumps({msg[0]: message_to_ordereddict(msg[1])})
-                    file.write(msg_attr_in_json)
+            for msg in msg_list:
+                msg_attr_in_json = json.dumps({msg[0]: message_to_ordereddict(msg[1])})
+                file.write(msg_attr_in_json)
 
 
 class RosLogger(Node):
@@ -141,11 +148,12 @@ class RosLogger(Node):
         for topic_describe_dict in self.configs:
             topic_name = topic_describe_dict["name"]
             topic_type = locate(topic_describe_dict["type"])
-            if topic_describe_dict["qos"] == 1:
-                self.list_topics.append(MyTopic(self, topic_name, topic_type, qos_profile_sensor_data,
+            if topic_describe_dict["qos"] == 10:
+                self.list_topics.append(MyTopic(self, topic_name, topic_type, 10,
                                             self.start_logger_time, self.logs_path))
             else:
-                self.list_topics.append(MyTopic(self, topic_name, topic_type, 10,
+                qos_type = locate(topic_describe_dict["qos"])
+                self.list_topics.append(MyTopic(self, topic_name, topic_type, qos_type,
                                                 self.start_logger_time, self.logs_path))
 
 
@@ -182,16 +190,58 @@ def get_date_str(time_s):
     return day + "" + month + "" + year
 
 
-def run(cfg, dir_to_save):
-    # загрузка конфигурационного файла
-    # with open(args.cfg) as json_file:
-    #     cfg = json.load(json_file)
+def get_list_of_required_modules(config_dict):
+    modules_set = set()
+    for topic in config_dict:
+        msg_type_module_name = str()
+        for char in topic['type']:
+            if char != '.':
+                msg_type_module_name += char
+            else:
+                break
+        modules_set.add(msg_type_module_name)
 
-    rclpy.init()
+    return modules_set
 
-    logger = RosLogger("ros_logger_node", cfg, dir_to_save)
 
-    rclpy.spin(logger)
+def import_custom_modules(modules_list):
+    for module in modules_list:
+        globals()[module] = __import__(module)
 
-    logger.destroy_node()
-    rclpy.shutdown()
+
+# def run(cfg, dir_to_save):
+#     # import all required libraries
+#     modules_list = get_list_of_required_modules(cfg)
+#     import_custom_modules(modules_list)
+#
+#     rclpy.init()
+#
+#     logger = RosLogger("ros_logger_node", cfg, dir_to_save)
+#
+#     rclpy.spin(logger)
+#
+#     logger.destroy_node()
+#     rclpy.shutdown()
+#     print('everything are destroyed ;) ')
+
+
+class LoggerInit:
+    def __init__(self, cfg, directory):
+        self.config = cfg
+        self.log_store_directory = directory
+
+    def run(self):
+        # import all required libraries
+        modules_list = get_list_of_required_modules(self.config)
+        import_custom_modules(modules_list)
+
+        rclpy.init()
+
+        self.logger = RosLogger("ros_logger_node", self.config, self.log_store_directory)
+
+        rclpy.spin(self.logger)
+
+    def destroy(self):
+        self.logger.destroy_node()
+        rclpy.shutdown()
+        print('everything are destroyed ;) ')
