@@ -32,7 +32,7 @@ class LoggingStartWidget(QWidget):
 
         self.log_save_directory_display = QPlainTextEdit(self.log_save_directory)
         self.log_save_directory_display.setFixedHeight(30)
-        self.log_save_directory_display.setReadOnly(True)
+        self.log_save_directory_display.setReadOnly(False)
 
         self.choose_dir_button = QPushButton('change directory')
         self.choose_dir_button.clicked.connect(self.choose_directory_to_store_logs)

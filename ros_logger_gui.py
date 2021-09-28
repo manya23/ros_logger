@@ -75,7 +75,6 @@ class RosLoggerApplication:
     def quit_app(self):
         self.app.quit()
 
-
 if __name__ == '__main__':
     # Create the Ros Logger Application
     app = RosLoggerApplication()

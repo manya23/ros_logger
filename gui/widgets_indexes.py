@@ -30,6 +30,7 @@ class DataDisplayWidgetIndexes(Enum):
     all custom switched widgets types for data display manage window
     """
     GET_DISPLAY_LAYOUT = 0
-    PLOT_SETUP_LAYOUT = 1
+    PARSING_PROCESS_DISPLAY_LAYOUT = 1
+    PLOT_SETUP_LAYOUT = 2
 
     NONE_WIDGET = 888

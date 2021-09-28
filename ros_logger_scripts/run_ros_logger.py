@@ -114,6 +114,7 @@ class MyTopic:
             for msg in msg_list:
                 msg_attr_in_json = json.dumps({msg[0]: message_to_ordereddict(msg[1])})
                 file.write(msg_attr_in_json)
+                file.write('\n')
 
 
 class RosLogger(Node):

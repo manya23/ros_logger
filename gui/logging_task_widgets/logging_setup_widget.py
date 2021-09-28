@@ -95,14 +95,17 @@ class LoggingSetupWidget(QWidget):
 
     def __fill_topic_list_display_table(self, config):
         self.table_len = int()
+        topic_name_list = list()
         # fill table fields with info from config file
         for topic_describe_dict in config:
-            # TODO: заменить структуру конфига - убрать словарь с ключом "traced_internal_topic_list"
+            if topic_describe_dict['name'] in topic_name_list:
+                continue
             row_pose = self.topic_list_display_table.rowCount()
             self.topic_list_display_table.insertRow(row_pose)
             table_label = 'Topic ' + '\'' + topic_describe_dict['name'] + '\'' + ' with type ' \
                           + '\'' + topic_describe_dict['type'] + '\''
             self.__add_new_checkbox_point(row_pose, table_label, topic_describe_dict)
+            topic_name_list.append(topic_describe_dict['name'])
             self.table_len += 1
         print('table len', self.table_len)
 
@@ -112,9 +115,7 @@ class LoggingSetupWidget(QWidget):
             # load info from config file
             with open(config_file) as json_file:
                 config = json.load(json_file)
-            # TODO: убрать ["traced_internal_topic_list"]
-            self.__fill_topic_list_display_table(config["traced_internal_topic_list"])
-            print('CONFIG FROM FILE',config["traced_internal_topic_list"])
+            self.__fill_topic_list_display_table(config)
         # in other way we just pass config_file variable to fill table
         else:
             self.__fill_topic_list_display_table(config_file)

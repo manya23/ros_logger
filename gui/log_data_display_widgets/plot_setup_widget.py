@@ -6,6 +6,7 @@ from PyQt5.QtWebEngineWidgets import QWebEngineView
 
 from gui.windows_parameters_description import plot_preview_wight, plot_preview_height
 from gui.dialog_windows import choose_data_to_axis_dialog
+from ros_logger_scripts import get_data_from_msg
 
 
 class PlotSetupWidget(QWidget):
@@ -15,6 +16,9 @@ class PlotSetupWidget(QWidget):
         self.html_plot_path = str()
         self.x_axis_data = list()
         self.y_axis_data = list()
+        self.parsed_topic_w_type_dict = list()
+
+        self.parsed_topic_w_msgs_dict = dict()
         self.__init_widget()
 
     def __init_widget(self):
@@ -92,12 +96,16 @@ class PlotSetupWidget(QWidget):
 
     def choose_x_axis(self):
         self.x_axis_data = list()
-        dlg = choose_data_to_axis_dialog.ChooseAxisData()
+        dlg = choose_data_to_axis_dialog.ChooseAxisData(self.parsed_topic_w_type_dict)
+        # dlg.topic_dict = self.parsed_topic_dict
         if dlg.exec():
             dlg.get_checked_items()
             self.x_axis_data = dlg.selected_items
             self.choose_number_of_selected_axes()
             self.display_x_axis.setPlainText('here is X:')
+            # print('self.x_axis_data[0][1]: ', self.x_axis_data[0][1])
+            msg_data_dict = get_data_from_msg.get_data(self.x_axis_data[0][1], self.parsed_topic_w_msgs_dict)
+            print('required messages: ', msg_data_dict)
             for msg_field in self.x_axis_data:
                 self.display_x_axis.appendPlainText(str(msg_field))
         else:
@@ -106,7 +114,8 @@ class PlotSetupWidget(QWidget):
             self.display_x_axis.setPlainText(self.x_axis_data[0])
 
     def choose_extra_x(self):
-        dlg = choose_data_to_axis_dialog.ChooseAxisData()
+        dlg = choose_data_to_axis_dialog.ChooseAxisData(self.parsed_topic_w_type_dict)
+        # dlg.topic_dict = self.parsed_topic_dict
         if dlg.exec():
             dlg.get_checked_items()
             self.x_axis_data.extend(dlg.selected_items)
@@ -119,7 +128,8 @@ class PlotSetupWidget(QWidget):
 
     def choose_y_axis(self):
         self.y_axis_data = list()
-        dlg = choose_data_to_axis_dialog.ChooseAxisData()
+        dlg = choose_data_to_axis_dialog.ChooseAxisData(self.parsed_topic_w_type_dict)
+        # dlg.topic_dict = self.parsed_topic_dict
         if dlg.exec():
             dlg.get_checked_items()
             self.y_axis_data = dlg.selected_items
@@ -133,7 +143,8 @@ class PlotSetupWidget(QWidget):
             self.display_y_axis.setPlainText(self.y_axis_data[0])
 
     def choose_extra_y(self):
-        dlg = choose_data_to_axis_dialog.ChooseAxisData()
+        dlg = choose_data_to_axis_dialog.ChooseAxisData(self.parsed_topic_w_type_dict)
+        # dlg.topic_dict = self.parsed_topic_dict
         if dlg.exec():
             dlg.get_checked_items()
             self.y_axis_data.extend(dlg.selected_items)

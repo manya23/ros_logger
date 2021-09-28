@@ -1,3 +1,7 @@
 venv/
 __pycache__/
 .idea/
+TODO_logger.txt
+logger_confog.json
+config_file.json
+

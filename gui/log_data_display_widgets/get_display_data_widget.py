@@ -5,6 +5,7 @@ import os
 from gui.dialog_windows import choose_directory_dialog
 from gui.widgets_indexes import WidgetIndexes
 from gui.windows_parameters_description import plain_text_edit_wights
+from ros_logger_scripts import ros_log_parser
 
 
 class GetDataDisplayWidget(QWidget):
@@ -20,7 +21,7 @@ class GetDataDisplayWidget(QWidget):
 
         self.log_data_directory_display = QPlainTextEdit(self.log_data_directory)
         self.log_data_directory_display.setFixedHeight(30)
-        self.log_data_directory_display.setReadOnly(True)
+        self.log_data_directory_display.setReadOnly(False)
 
         self.choose_dir_button = QPushButton('Choose directory')
         self.choose_dir_button.clicked.connect(self.get_log_dir_path)
@@ -31,8 +32,8 @@ class GetDataDisplayWidget(QWidget):
 
         parsed_log_info_label = QLabel('Selected directories contain next messages types')
 
-        self.messages_display = QPlainTextEdit('')
-        self.messages_display.setFixedWidth(plain_text_edit_wights)
+        self.topic_msg_display = QPlainTextEdit('')
+        self.topic_msg_display.setFixedWidth(plain_text_edit_wights)
 
 
         self.back_button = QPushButton('Back')
@@ -49,7 +50,7 @@ class GetDataDisplayWidget(QWidget):
         self.get_data_display_layout.addWidget(widget_info_label)
         self.get_data_display_layout.addLayout(log_directory_activity_layout)
         self.get_data_display_layout.addWidget(parsed_log_info_label)
-        self.get_data_display_layout.addWidget(self.messages_display)
+        self.get_data_display_layout.addWidget(self.topic_msg_display)
         self.get_data_display_layout.addLayout(back_next_buttons_layout)
 
         self.setLayout(self.get_data_display_layout)
@@ -59,13 +60,23 @@ class GetDataDisplayWidget(QWidget):
         self.log_data_directory_display.setPlainText(self.log_data_directory)
         # Распарсить только типы сообщений и в соответствии с ними вывести список с названием топика, типом сообщений в нем,
         # и полями этих сообщений
-        self.messages_display.setPlainText('A list of topics with its messages type will be displayed here')
-        # TODO: fill QTable with data from parsed msgs
+        self.topic_from_dir_dict = ros_log_parser.get_all_topic_msg_type_pair(self.log_data_directory)
+        i = 1
+        for topic_name, topic_type in self.topic_from_dir_dict.items():
+            self.topic_msg_display.appendPlainText('{num}. Topic "{topic}" with messages type: "{type}"'.format(num=i,
+                                                                                                      topic=topic_name,
+                                                                                                      type=topic_type))
+            i += 1
 
     def go_to_choose_activity_window(self):
         self.log_data_directory_display.setPlainText('')
-        self.messages_display.setPlainText('')
+        self.topic_msg_display.setPlainText('')
         self.main_app_object.set_current_main_window_widget(WidgetIndexes.CHOOSE_ACTIVITY_WIDGET)
 
     def go_to_next_widget(self):
-        self.log_display_manage_widget_object.go_to_plot_setup_layout()
+        # self.log_display_manage_widget_object.go_to_plot_setup_layout()
+        self.log_display_manage_widget_object.go_to_parsing_display_layout()
+        self.log_data_directory_display.setPlainText('')
+        self.topic_msg_display.setPlainText('')
+
+

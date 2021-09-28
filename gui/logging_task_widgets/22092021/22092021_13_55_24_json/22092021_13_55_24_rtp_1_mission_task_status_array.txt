@@ -1,0 +1,4 @@
+topic_name: /rtp_1/mission_task_status/array
+msg_type: marker_msgs.msg.TaskStatusArray
+{"1632308132.3305159": {"rtp_task_statuses": [{"task_id": 2, "cmd_num": -1, "status": 2, "rtp_id": 1}]}}
+{"1632308140.329391": {"rtp_task_statuses": [{"task_id": 2, "cmd_num": -1, "status": 4, "rtp_id": 1}]}}
