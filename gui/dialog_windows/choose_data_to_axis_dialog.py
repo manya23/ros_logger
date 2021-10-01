@@ -8,9 +8,9 @@ from PyQt5.QtWidgets import QFileDialog, QDialog
 from pydoc import locate
 
 from gui.windows_parameters_description import axis_dialog_wight, axis_dialog_height
+from ros_logger_scripts.get_msg_field_type import get_common_types_list
 
-common_field_type = ['uint8', 'uint16', 'uint32', 'int16', 'int32', 'string', 'boolean', 'float', 'double',
-                     'double[36]', ]
+common_field_type = get_common_types_list()
 
 
 # open dialog window to directory choosing and return chosen path
@@ -67,7 +67,7 @@ class ChooseAxisData(QDialog):
         iterator = QTreeWidgetItemIterator(self.tree, QTreeWidgetItemIterator.Checked)
         while iterator.value():
             item = iterator.value()
-            self.selected_items.append([item.text(0), item.data(0, Qt.UserRole)])
+            self.selected_items.append({'field name': item.text(0), 'field data': item.data(0, Qt.UserRole)})
             iterator += 1
 
     # put window to the middle of screen
@@ -118,7 +118,6 @@ def fill_ros_msg_to_tree_branch(parent_branch, ros_msg_type, topic_name, path_to
         path_to_field = copy.deepcopy(parent_path_to_field)
 
 
-
 def import_msg_lib(topic_dict):
     msg_to_import = list()
     for topic_name, msg_type in topic_dict.items():
@@ -132,3 +131,4 @@ def import_msg_lib(topic_dict):
     # import required modules
     for module in msg_to_import:
         globals()[module] = __import__(module)
+

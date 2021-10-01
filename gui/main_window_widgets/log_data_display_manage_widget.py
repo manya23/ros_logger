@@ -37,6 +37,7 @@ class LogDataDisplayWidget(QWidget):
         self.parsing_display_widget.log_directory_path = log_data_directory
         self.parsing_display_widget.topic_from_dir_dict = topic_list
         self.parsing_display_widget.msg_ts_list = all_ts_list
+        self.parsing_display_widget.init_slider_range()
 
         self.log_data_display_layout.setCurrentIndex(DataDisplayWidgetIndexes.PARSING_PROCESS_DISPLAY_LAYOUT.value)
 

@@ -9,13 +9,16 @@ class ThreadWorkTask(QObject):
     # определяется сигнал, который будет возвращать вывод потока
     parsing_process_signal = pyqtSignal(list)
 
-    def __init__(self, log_directory_path, topic_name):
+    def __init__(self, log_directory_path, topic_name, ts_min, ts_max):
         super(ThreadWorkTask, self).__init__()
         self.log_directory_path = log_directory_path
         self.topic_name = topic_name
+        self.ts_min = ts_min
+        self.ts_max = ts_max
 
     def start_parsing_process(self):
-        topic_msgs = ros_log_parser.get_all_topic_msgs(list([self.log_directory_path]), self.topic_name)
+        topic_msgs = ros_log_parser.get_all_topic_msgs(list([self.log_directory_path]), self.topic_name,
+                                                       self.ts_min, self.ts_max)
         self.thread_result = [self.topic_name, topic_msgs]
 
         self.parsing_process_signal.emit([self.topic_name, True])
@@ -24,7 +27,7 @@ class ThreadWorkTask(QObject):
 class StartThread(QObject):
     thread_done_mark_signal = pyqtSignal(str)
 
-    def __init__(self, topic_from_dir_dict, log_directory_path, next_button, process_display_widget):
+    def __init__(self, topic_from_dir_dict, log_directory_path, next_button, process_display_widget, ts_min, ts_max):
         super(StartThread, self).__init__()
         self.topic_from_dir_dict = topic_from_dir_dict
         self.log_directory_path = log_directory_path
@@ -38,6 +41,9 @@ class StartThread(QObject):
         self.thread_object_list = list()
         self.parsed_msg_dict = dict()
 
+        self.ts_min = ts_min
+        self.ts_max = ts_max
+
         self.__start_parsing()
 
     def __start_parsing(self):
@@ -49,7 +55,7 @@ class StartThread(QObject):
     def __start_thread(self, log_directory_path, topic_name):
         parsing_thread = QThread(parent=self)
         self.thread_object_list.append(parsing_thread)
-        working_process_object = ThreadWorkTask(log_directory_path, topic_name)
+        working_process_object = ThreadWorkTask(log_directory_path, topic_name, self.ts_min, self.ts_max)
         self.thread_work_object_list.append(working_process_object)
         working_process_object.moveToThread(parsing_thread)
         working_process_object.parsing_process_signal.connect(self.thread_done)

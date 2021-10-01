@@ -75,9 +75,15 @@ class ParsingDisplayWidget(QWidget):
         self.max_ts_slider.setMinimum(1)
         self.max_ts_slider.setMaximum(len(self.msg_ts_list) - 1)
         self.max_ts_slider.setValue(len(self.msg_ts_list) - 1)
-        self.min_ts_slider.setMinimum(1)
+        self.min_ts_slider.setMinimum(0)
         self.min_ts_slider.setMaximum(len(self.msg_ts_list) - 1)
-        self.min_ts_slider.setValue(1)
+        self.min_ts_slider.setValue(0)
+
+        min_timestamp = str(time.strftime("%H:%M:%S", time.localtime(self.msg_ts_list[0])))
+        max_timestamp = str(time.strftime("%H:%M:%S", time.localtime(self.msg_ts_list[-1])))
+        self.min_ts_display.setText(min_timestamp)
+        self.max_ts_display.setText(max_timestamp)
+
 
     #
     def __change_min_value(self, value):
@@ -92,10 +98,17 @@ class ParsingDisplayWidget(QWidget):
         self.max_ts_display.setText(msg_timestamp)
 
     def run_parsing(self):
+        start_time = float(self.msg_ts_list[self.min_ts_slider.value()])
+        end_time = float(self.msg_ts_list[self.max_ts_slider.value()])
+
         self.start_parsing_button.setEnabled(False)
         self.parsing_process_object = parsing_thread.StartThread(self.topic_from_dir_dict, self.log_directory_path,
-                                                                   self.next_button, self.process_display)
+                                                                 self.next_button, self.process_display,
+                                                                 start_time, end_time)
 
 
     def go_to_next_widget(self):
+        self.process_display.setPlainText('')
+        self.start_parsing_button.setEnabled(True)
+        self.next_button.setEnabled(False)
         self.log_display_manage_widget_object.go_to_plot_setup_layout()

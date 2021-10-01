@@ -1,6 +1,0 @@
-topic_name: /rtp_1/mission_task_cmd_status/array
-msg_type: marker_msgs.msg.TaskStatusArray
-{"1632308133.3294525": {"rtp_task_statuses": [{"task_id": 2, "cmd_num": 0, "status": 2, "rtp_id": 1}]}}
-{"1632308135.3293607": {"rtp_task_statuses": [{"task_id": 2, "cmd_num": 0, "status": 4, "rtp_id": 1}]}}
-{"1632308137.329408": {"rtp_task_statuses": [{"task_id": 2, "cmd_num": 1, "status": 2, "rtp_id": 1}]}}
-{"1632308139.3294024": {"rtp_task_statuses": [{"task_id": 2, "cmd_num": 1, "status": 4, "rtp_id": 1}]}}

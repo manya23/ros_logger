@@ -4,4 +4,6 @@ __pycache__/
 TODO_logger.txt
 logger_confog.json
 config_file.json
+test_data/
+ros_logger_scripts/meta_data/
 

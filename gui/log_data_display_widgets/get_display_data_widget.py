@@ -60,13 +60,16 @@ class GetDataDisplayWidget(QWidget):
         self.log_data_directory_display.setPlainText(self.log_data_directory)
         # Распарсить только типы сообщений и в соответствии с ними вывести список с названием топика, типом сообщений в нем,
         # и полями этих сообщений
-        self.topic_from_dir_dict = ros_log_parser.get_all_topic_msg_type_pair(self.log_data_directory)
-        i = 1
-        for topic_name, topic_type in self.topic_from_dir_dict.items():
-            self.topic_msg_display.appendPlainText('{num}. Topic "{topic}" with messages type: "{type}"'.format(num=i,
-                                                                                                      topic=topic_name,
-                                                                                                      type=topic_type))
-            i += 1
+        try:
+            self.topic_from_dir_dict = ros_log_parser.get_all_topic_msg_type_pair(self.log_data_directory)
+            i = 1
+            for topic_name, topic_type in self.topic_from_dir_dict.items():
+                self.topic_msg_display.appendPlainText('{num}. Topic "{topic}" with messages type: "{type}"'.format(num=i,
+                                                                                                          topic=topic_name,
+                                                                                                          type=topic_type))
+                i += 1
+        except:
+            self.topic_msg_display.setPlainText('Some trouble with \'{dir}\'. No such directory.'.format(dir=self.log_data_directory))
 
     def go_to_choose_activity_window(self):
         self.log_data_directory_display.setPlainText('')

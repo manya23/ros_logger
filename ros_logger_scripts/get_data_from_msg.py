@@ -22,7 +22,11 @@ def get_data(data_info, parsed_topics_dict):
     path_in_msg_structure = data_info['path']
     # print('topic_name list: ', topic_types)
 
+    print('topic name: ', data_info['name'], topic_name)
     topic_msgs = parsed_topics_dict[topic_name]
+    print('topic dict keys: ', parsed_topics_dict.keys())
+    print('topic dict items: ', parsed_topics_dict.items())
+    print('msgs: ', parsed_topics_dict[topic_name])
     msg_w_timestamp_dict = dict()
 
     import_msg_lib(topic_types)

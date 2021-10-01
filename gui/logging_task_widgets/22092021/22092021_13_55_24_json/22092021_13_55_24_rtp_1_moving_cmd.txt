@@ -1,4 +1,0 @@
-topic_name: /rtp_1/moving_cmd
-msg_type: marker_msgs.msg.MissionTaskCmd
-{"1632308132.3311527": {"task_id": 2, "cmd_num": 0, "rtp": [1], "type": 1, "formation": 0, "only_joint_execution": false, "distance_between_rtp": 0.0, "time_of_completing": "", "coordinates": [{"x": 10.0, "y": 10.0, "z": 0.0}, {"x": 100.0, "y": 50.0, "z": 0.0}], "v_min": 0.0, "v_max": 0.0}}
-{"1632308136.3294516": {"task_id": 2, "cmd_num": 1, "rtp": [1], "type": 1, "formation": 0, "only_joint_execution": false, "distance_between_rtp": 0.0, "time_of_completing": "", "coordinates": [{"x": 200.0, "y": 200.0, "z": 0.0}], "v_min": 0.0, "v_max": 0.0}}

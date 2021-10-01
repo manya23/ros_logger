@@ -360,9 +360,9 @@ def __get_all_topic_files(logs_dirs, topic_name, allow_rtp_id=False):
 
 
 def __get_ts_from_line(line):
-    ts_list = re.findall(r'[0.0-9.0]+:', line)
+    ts_list = re.findall(r'[0.0-9.0]+"', line)
     if len(ts_list) > 0:
-        return float(ts_list[0].split(':')[0])
+        return float(ts_list[0].split('"')[0])
     else:
         return 0.0
 
@@ -374,7 +374,7 @@ def __get_ros_msg_from_line(line, msg_type):
         return ts, __convert_to_ros_msg(msg_type, msg)
 
 
-def __read_all_msgs_from_file(file_path):
+def __read_all_msgs_from_file(file_path, ts_min=None, ts_max=None):
     """
     Возвращает список всех ROS сообщений из лог-файла
 
@@ -393,7 +393,14 @@ def __read_all_msgs_from_file(file_path):
                 continue
             try:
                 ts, ros_msg = __get_ros_msg_from_line(line, topic_type)
-                msg_list.update({ts: ros_msg})
+                # msg_list.update({ts: ros_msg})
+                if ts_min is None and ts_max is None:
+                    msg_list.update({ts: ros_msg})
+                elif ts_min <= float(ts) < ts_max:
+                    msg_list.update({ts: ros_msg})
+                elif float(ts) == ts_max:
+                    msg_list.update({ts: ros_msg})
+                    return msg_list
             except AttributeError:
                 continue
     return msg_list
@@ -487,62 +494,6 @@ def import_all_required_libraries(dir_path):
         globals()[module] = __import__(module)
 
 
-# def get_all_topics_names_with_dir_name(log_dir_list, required_topics, multi_path_topics):
-#     """
-#     Возвращает список имен всех топиков лог-файлов
-#
-#     :param log_dir_list: список директорий с лог-файлами
-#     :type log_dir_list: list
-#     :return: список словарей вида: {папка РТП: список имен топиков в ней}
-#     :rtype: list
-#     """
-#     topic_names = list()
-#     for log_dir in log_dir_list:
-#         files_list = __get_all_files_from_dir(log_dir)
-#         for file in files_list:
-#             topic_name = __get_topic_name_from_file(file)
-#             if topic_name[len('/rtp_n'):] in required_topics:
-#                 if topic_name[len('/rtp_n'):] in multi_path_topics:
-#                     topic_name = topic_name[len('/rtp_n'):]
-#                 topic_names.append({log_dir: topic_name})
-#     return topic_names
-
-
-# def get_available_mission_tasks(logs_dirs):
-#     """
-#     Возвращает список доступных маршрутных заданий в виде списка пар (ID МЗ, кол-во команд)
-#
-#     :param logs_dirs: список директорий с лог-файлами
-#     :type logs_dirs: list
-#     :return: список пар (ID МЗ, кол-во команд)
-#     :rtype: list
-#     """
-#     mission_tasks = __get_all_mission_tasks(logs_dirs)
-#     id_and_cmd_count = list()
-#     for ts, task in mission_tasks.items():
-#         id_and_cmd_count.append((task.id, len(task.commands)))
-#     return id_and_cmd_count
-
-
-# def get_available_rtp(logs_dirs):
-#     """
-#     Возвращает ID всех РТП из лог-файлов на основе имен топиков
-#
-#     :param logs_dirs: список директорий с лог-файлами
-#     :type logs_dirs: list
-#     :return: список ID РТП
-#     :rtype: list
-#     """
-#     rtp_list = set()
-#     for topic in get_all_topics_names(logs_dirs):
-#         for res in re.findall(r'rtp_\d', topic):
-#             try:
-#                 rtp_list.add(int(res.split('_')[-1]))
-#             except IndexError:
-#                 pass
-#     return list(rtp_list)
-
-
 def get_all_topic_ts(logs_dirs, topic_name):
     """
     Возвращает список месток времени для топика
@@ -557,11 +508,12 @@ def get_all_topic_ts(logs_dirs, topic_name):
     ts_list = list()
     topic_files, topic_files_with_name = __get_all_topic_files(logs_dirs, topic_name, allow_rtp_id=True)
     for file in topic_files:
+        print('file from get_all_topic_ts: ', file)
         ts_list += __read_all_ts_from_file(file)
     return ts_list
 
 
-def get_all_topic_msgs(logs_dirs, topic_name, allow_rtp_id=False, dt=None):
+def get_all_topic_msgs(logs_dirs, topic_name, ts_min, ts_max, allow_rtp_id=False, dt=None):
     """
     Возвращает все сообщения для указанного топика
 
@@ -569,6 +521,8 @@ def get_all_topic_msgs(logs_dirs, topic_name, allow_rtp_id=False, dt=None):
     :type logs_dirs: list
     :param topic_name: имя топика
     :type topic_name: str
+    :param ts_min:
+    :param ts_max:
     :param allow_rtp_id: учитывать ли префикс РТП в названиии топика
     :type allow_rtp_id: bool
     :param dt: шаг времени между сообщениями
@@ -587,7 +541,7 @@ def get_all_topic_msgs(logs_dirs, topic_name, allow_rtp_id=False, dt=None):
         if topic_file_name not in parsed_topic_list:
             # start = time.time()
             if dt is None:
-                topic_msgs.update(__read_all_msgs_from_file(topic_file))
+                topic_msgs.update(__read_all_msgs_from_file(topic_file, ts_min, ts_max))
             else:
                 topic_msgs.update(__read_msgs_from_file(topic_file, dt))
             # end = time.time()
@@ -600,7 +554,7 @@ def get_all_topic_msgs(logs_dirs, topic_name, allow_rtp_id=False, dt=None):
 
 def get_all_topic_msg_type_pair(dir_path):
     available_topic_dict = dict()
-    print('dir path ', dir_path)
+    # print('dir path ', dir_path)
     topic_file_path = __get_all_files_from_dir_list(dir_path)
     for topic in topic_file_path:
         topic_name = __get_topic_name_from_file(topic)
@@ -622,6 +576,6 @@ def get_all_ts_from_few_topic(log_dir, topic_names_list):
 
     final_list = list(set(all_available_ts))
     final_list.sort(key=float)
-
-    return final_list
+    print('msg list: ', final_list[1:])
+    return final_list[1:]
 
