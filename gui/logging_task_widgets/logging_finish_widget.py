@@ -1,12 +1,18 @@
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 
-# import ros_logger_gui
 from gui.widgets_indexes import WidgetIndexes
 
 
 class LoggingProcessDisplayWidget(QWidget):
+    """
+    The widget presents functional allows to go to start menu with action choosing or quit app
+    """
     def __init__(self, main_app_object, logging_manage_object):
+        """
+        :param main_app_object: variable with main application object
+        :param logging_manage_object: variable with logging process widgets manager object
+        """
         super(LoggingProcessDisplayWidget, self).__init__()
         self.main_app_object = main_app_object
         self.logging_manage_object = logging_manage_object
@@ -46,4 +52,8 @@ class LoggingProcessDisplayWidget(QWidget):
         self.logging_manage_object.go_to_get_topic_list_widget()
 
     def quit_app(self):
+        """
+        Calls for method from main application object that destroys app
+        :return: nothing
+        """
         self.main_app_object.quit_app()

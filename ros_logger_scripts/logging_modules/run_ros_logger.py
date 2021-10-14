@@ -56,7 +56,7 @@ class MyTopic:
         # в начало файла с логами из топика заполняются поля с именем топика и типом сообщений, которые туда публикуются
         with open('{0}/{1}.txt'.format(folder_name, self.static_data_time + self._topic_name_copy), 'a') as file:
             str_type = str(self.topic_type).split("'")[1]
-            str_type = re.sub(r'[.]_\w+[.]', '.', str_type)
+            str_type = re.sub(r'[.]_\w+[.]', '..', str_type)
             # str_type = re.findall(r'\w+[.]\w+[.]\w+', str_type)[0]
             file.write('{}: {}\n'.format('topic_name', self.topic_name))
             file.write('{}: {}\n'.format('msg_type', str_type))

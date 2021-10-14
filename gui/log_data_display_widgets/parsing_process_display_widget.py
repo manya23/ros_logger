@@ -1,14 +1,15 @@
 import time
-import os
 
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
-from PyQt5 import QtCore
 
-from ros_logger_scripts import parsing_thread
+from ros_logger_scripts.data_display_modules import parsing_thread
 
 
 class ParsingDisplayWidget(QWidget):
+    """
+    The widget to set and run parsing process
+    """
     def __init__(self, log_display_manage_widget_object):
         super().__init__()
         self.log_display_manage_widget_object = log_display_manage_widget_object
@@ -19,21 +20,21 @@ class ParsingDisplayWidget(QWidget):
 
     def __init_widget(self):
 
-        self.common_ts_label = QLabel('Установаите временной диапазон, в рамках которого будет сформирован отчет. ')
-        self.max_ts_label = QLabel('Конечное время: ')
+        self.common_ts_label = QLabel('Set the time range within which the report will be generated. ')
+        self.max_ts_label = QLabel('End time: ')
         self.max_ts_slider = QSlider(Qt.Horizontal, self)
         self.max_ts_slider.setGeometry(30, 40, 300, 30)
         self.max_ts_slider.valueChanged[int].connect(self.__change_max_value)
 
-        self.min_ts_label = QLabel('Начальное время: ')
+        self.min_ts_label = QLabel('Start time: ')
         self.min_ts_slider = QSlider(Qt.Horizontal, self)
         self.min_ts_slider.setGeometry(30, 70, 300, 30)
         self.min_ts_slider.valueChanged[int].connect(self.__change_min_value)
 
         # задание горизонтального layout для отображения временного диапазона
         ts_display_layout = QHBoxLayout()
-        min_label = QLabel('Отчет будет собран по данным, записанным с ')
-        max_label = QLabel('до ')
+        min_label = QLabel('The report will be collected from the data recorded from ')
+        max_label = QLabel('till ')
         self.min_ts_display = QLineEdit()
         self.max_ts_display = QLineEdit()
         ts_display_layout.addWidget(min_label)
@@ -84,14 +85,11 @@ class ParsingDisplayWidget(QWidget):
         self.min_ts_display.setText(min_timestamp)
         self.max_ts_display.setText(max_timestamp)
 
-
-    #
     def __change_min_value(self, value):
         print(self.msg_ts_list[value], ' and its index: ', value)
         msg_timestamp = str(time.strftime("%H:%M:%S", time.localtime(self.msg_ts_list[value])))
         self.min_ts_display.setText(msg_timestamp)
 
-    #
     def __change_max_value(self, value):
         print(self.msg_ts_list[value])
         msg_timestamp = str(time.strftime("%H:%M:%S", time.localtime(self.msg_ts_list[value])))
@@ -105,7 +103,6 @@ class ParsingDisplayWidget(QWidget):
         self.parsing_process_object = parsing_thread.StartThread(self.topic_from_dir_dict, self.log_directory_path,
                                                                  self.next_button, self.process_display,
                                                                  start_time, end_time)
-
 
     def go_to_next_widget(self):
         self.process_display.setPlainText('')

@@ -1,7 +1,7 @@
 from PyQt5.QtWidgets import QFileDialog, QDialog
 
 
-# open dialog window to directory choosing and return chosen path
+# open dialog window to file choosing and return chosen path
 def choose_file():
     dialog = QFileDialog()
     options = QFileDialog.Options()

@@ -3,12 +3,12 @@ import copy
 
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
-from PyQt5.QtWidgets import QFileDialog, QDialog
+from PyQt5.QtWidgets import QDialog
 
 from pydoc import locate
 
 from gui.windows_parameters_description import axis_dialog_wight, axis_dialog_height
-from ros_logger_scripts.get_msg_field_type import get_common_types_list
+from ros_logger_scripts.data_display_modules.get_msg_field_type import get_common_types_list
 
 common_field_type = get_common_types_list()
 
@@ -95,7 +95,7 @@ def fill_ros_msg_to_tree_branch(parent_branch, ros_msg_type, topic_name, path_to
         # TODO: будет ли это стабильно работать -> в случае ошибки сделать запрос ручного ввода
         if 'sequence' in field_type:
             field_type = field_type.replace('sequence', '').replace('<', '').replace('>', '').replace('/', '.msg.')
-            print('field with seq type: ', field_type)
+            # print('field with seq type: ', field_type)
             if field_type not in common_field_type:
                 branch_depth += 1
                 fill_ros_msg_to_tree_branch(child, field_type, topic_name, path_to_field, branch_depth, parent_msg_types)
@@ -107,7 +107,7 @@ def fill_ros_msg_to_tree_branch(parent_branch, ros_msg_type, topic_name, path_to
         elif field_type not in common_field_type:
             branch_depth += 1
             field_type = field_type.replace('/', '.msg.')
-            print('field with not common type: ', field_type)
+            # print('field with not common type: ', field_type)
             fill_ros_msg_to_tree_branch(child, field_type, topic_name, path_to_field, branch_depth, parent_msg_types)
         else:
             data = {'name': topic_name, 'types': parent_msg_types, 'path': path_to_field}

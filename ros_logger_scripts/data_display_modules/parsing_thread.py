@@ -1,6 +1,6 @@
 from PyQt5.QtCore import *
 from PyQt5 import QtCore
-from ros_logger_scripts import ros_log_parser
+from ros_logger_scripts.data_display_modules import ros_log_parser
 
 
 class ThreadWorkTask(QObject):

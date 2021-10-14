@@ -106,7 +106,6 @@ def __get_all_files_from_dir(dir_path):
     """
     files_list = list()
     # print('dir_path: ', dir_path)
-    print('dir path', dir_path)
     for file in os.listdir(dir_path):
         if os.path.isdir(dir_path + file):
             files_list += __get_all_files_from_dir(dir_path + file)
@@ -508,7 +507,7 @@ def get_all_topic_ts(logs_dirs, topic_name):
     ts_list = list()
     topic_files, topic_files_with_name = __get_all_topic_files(logs_dirs, topic_name, allow_rtp_id=True)
     for file in topic_files:
-        print('file from get_all_topic_ts: ', file)
+        # print('file from get_all_topic_ts: ', file)
         ts_list += __read_all_ts_from_file(file)
     return ts_list
 
@@ -569,13 +568,13 @@ def get_all_ts_from_few_topic(log_dir, topic_names_list):
     Возвращает список всех timestamp для выбранных топиков из директорий
     """
     all_available_ts = list()
-    print(topic_names_list)
+    # print(topic_names_list)
     for topic_name in topic_names_list:
         topic_ts_list = get_all_topic_ts(list([log_dir]), topic_name)
         all_available_ts.extend(topic_ts_list)
 
     final_list = list(set(all_available_ts))
     final_list.sort(key=float)
-    print('msg list: ', final_list[1:])
+    # print('msg list: ', final_list[1:])
     return final_list[1:]
 

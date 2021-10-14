@@ -1,15 +1,21 @@
 from PyQt5.QtWidgets import *
-from PyQt5.QtCore import *
-import os
 
 from gui.dialog_windows import choose_directory_dialog
 from gui.widgets_indexes import WidgetIndexes
 from gui.windows_parameters_description import plain_text_edit_wights
-from ros_logger_scripts import ros_log_parser
+from ros_logger_scripts.data_display_modules import ros_log_parser
 
 
 class GetDataDisplayWidget(QWidget):
+    """
+    Widget to choose directory contained log files
+    """
     def __init__(self, main_app_object, log_display_manage_widget_object):
+        """
+
+        :param main_app_object: variable with main application object
+        :param log_display_manage_widget_object: variable with logging process widgets manager object
+        """
         super(GetDataDisplayWidget, self).__init__()
         self.main_app_object = main_app_object
         self.log_display_manage_widget_object = log_display_manage_widget_object
@@ -56,6 +62,10 @@ class GetDataDisplayWidget(QWidget):
         self.setLayout(self.get_data_display_layout)
 
     def get_log_dir_path(self):
+        """
+        Opens dialog window to choose directory and displays it in PlainText widget.
+        :return: nothing
+        """
         self.log_data_directory = choose_directory_dialog.choose_directory()
         self.log_data_directory_display.setPlainText(self.log_data_directory)
         # Распарсить только типы сообщений и в соответствии с ними вывести список с названием топика, типом сообщений в нем,
@@ -72,12 +82,19 @@ class GetDataDisplayWidget(QWidget):
             self.topic_msg_display.setPlainText('Some trouble with \'{dir}\'. No such directory.'.format(dir=self.log_data_directory))
 
     def go_to_choose_activity_window(self):
+        """
+        Resets all widgets from window to default state and sets Choose Activity widget
+        :return: nothing
+        """
         self.log_data_directory_display.setPlainText('')
         self.topic_msg_display.setPlainText('')
         self.main_app_object.set_current_main_window_widget(WidgetIndexes.CHOOSE_ACTIVITY_WIDGET)
 
     def go_to_next_widget(self):
-        # self.log_display_manage_widget_object.go_to_plot_setup_layout()
+        """
+        Resets all widgets from window to default state and call for parsing widget settings function
+        :return: nothing
+        """
         self.log_display_manage_widget_object.go_to_parsing_display_layout()
         self.log_data_directory_display.setPlainText('')
         self.topic_msg_display.setPlainText('')

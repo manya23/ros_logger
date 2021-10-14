@@ -7,25 +7,25 @@ from gui.main_window_widgets import choose_activity_widget, logging_manage_widge
 from gui.widgets_indexes import WidgetIndexes
 
 
-class MainApp (QMainWindow):
+class MainApp(QMainWindow):
     def __init__(self, app_main_process):
+        """
+        Initialization of main application window
+        :param app_main_process: object of app running process
+        """
         super().__init__()
         self.app_main_process = app_main_process
-        # create objects of 3 main widgets
+        # create objects of 2 main widgets
         self.choose_activity_widget = choose_activity_widget.ChooseActivityWidget()
-        # self.log_writing_widget = log_writing_widget.LogWritingWidget()
         self.logging_start_widget = logging_manage_widget.LoggingManageWidget(self)
-        # set current displayed widget
         self.log_data_display_widget = log_data_display_manage_widget.LogDataDisplayWidget(self)
+
+        # set current displayed widget
         self.current_widget_enum = WidgetIndexes.CHOOSE_ACTIVITY_WIDGET
 
         self.init_main_widget()
 
     def init_main_widget(self):
-        """
-        Формирование основного окна приложения
-        :return:
-        """
         main_widget = QWidget()
         self.setGeometry(0, 0, main_window_wight, main_window_height)
         self.center()
@@ -75,6 +75,11 @@ class RosLoggerApplication:
     def quit_app(self):
         self.app.quit()
 
+
 if __name__ == '__main__':
     # Create the Ros Logger Application
     app = RosLoggerApplication()
+
+
+# TODO: common TODOs:
+# TODO: create testing functions

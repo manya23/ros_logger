@@ -1,10 +1,17 @@
 from PyQt5.QtWidgets import *
-from PyQt5.QtCore import *
 
-from ros_logger_scripts import run_ros_logger, logging_thread
+from ros_logger_scripts.logging_modules import run_ros_logger, logging_thread
+
 
 class LoggingProcessDisplayWidget(QWidget):
+    """
+    The widget displays info about logging process and has control buttons that allows to stop, pause and play logging
+    process.
+    """
     def __init__(self, logging_manage_object):
+        """
+        :param logging_manage_object: variable with logging process widgets manager object
+        """
         super(LoggingProcessDisplayWidget, self).__init__()
         self.logging_manage_object = logging_manage_object
         self.directory_to_save_logs = str()
@@ -44,6 +51,10 @@ class LoggingProcessDisplayWidget(QWidget):
         self.setLayout(self.log_process_display_layout)
 
     def pause_log_recording(self):
+        """
+        When pause button pressed it stop allowing writing down to file info published in topics
+        :return: nothing
+        """
         for topic in self.logger.logger.list_topics:
             topic.pause_pressed = True
         self.play_button.setEnabled(True)
@@ -51,20 +62,34 @@ class LoggingProcessDisplayWidget(QWidget):
         print('pause')
 
     def play_log_recording(self):
+        """
+        When play button pressed it begin allowing writing down to file info published in topics
+        :return: nothing
+        """
         for topic in self.logger.logger.list_topics:
             topic.pause_pressed = False
-        print('play')
         self.play_button.setEnabled(False)
         self.pause_button.setEnabled(True)
+        print('play')
 
     def stop_log_recording(self):
+        """
+        Destroys node that listens for topics and destroys threads with logging process running
+        :return: nothing
+        """
+        # TODO: stop running all processes from self.logger object
+        # TODO: delete not Qt thread from self.logger object
         self.logger.destroy()
         self.logging_process_object.logging_thread.quit()
-        # self.logging_process_object.logging_thread.wait()
         self.logging_manage_object.go_to_logging_finish_widget()
         print('stop')
 
     def run_logging_process(self):
+        """
+        Runs "ros_logger_node" to start subscription to all required topics. And runs logger in separate thread
+        :return: nothing
+        """
+        # TODO: define how much threads have to be run for this task
         self.logger = run_ros_logger.LoggerInit(self.selected_topic_list, self.directory_to_save_logs)
         self.logging_process_object = logging_thread.StartLoggingThread(self.logger)
 

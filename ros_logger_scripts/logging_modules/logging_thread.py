@@ -1,6 +1,5 @@
 from PyQt5.QtCore import *
 from PyQt5 import QtCore
-from ros_logger_scripts import run_ros_logger
 
 
 class RunLogging(QObject):
