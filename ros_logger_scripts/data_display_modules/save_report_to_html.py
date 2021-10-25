@@ -1,5 +1,5 @@
 import os
-from ros_logger_scripts.folder_pathes import report_html_template_path, interactive_plot_scripts_folder_path
+from ros_logger_scripts.folder_paths import report_html_template_path, interactive_plot_scripts_folder_path
 
 
 def write_js_scripts_folder(target_dir_path):

@@ -68,35 +68,66 @@ class PlotPreviewWidget(QWidget):
         self.axis_description = axis_description
         self.plot_title = plot_title
         # TODO: start updating in thread
-        self.update_thread.widget_running_thread.update_plot(self.main_plot, axis_data, x_axis_data, y_axis_data)
+        # self.update_thread.widget_running_thread.update_plot(self.main_plot, axis_data, x_axis_data, y_axis_data)
+
         # if specific x and y data doesn't declare - display at x axis timestamps, at y axis data from message field
-        # if x_axis_data is None and y_axis_data is None:
-        #     x_axis = list()
-        #     y_axis = list()
-        #     for timestamp, msg in axis_data.items():
-        #         x_axis.append(timestamp)
-        #         y_axis.append(msg)
-        # else:
-        #     x_timestamp = list(x_axis_data.keys())
-        #     y_timestamp = list(y_axis_data.keys())
-        #     if len(x_timestamp) != len(y_timestamp):
-        #         min_ts = max([min(x_timestamp), min(y_timestamp)])
-        #         max_ts = min([max(x_timestamp), max(y_timestamp)])
-        #         x_axis = [msg for ts, msg in x_axis_data.items() if min_ts <= ts <= max_ts]
-        #         y_axis = [msg for ts, msg in y_axis_data.items() if min_ts <= ts <= max_ts]
-        #     else:
-        #         x_axis = [msg for ts, msg in x_axis_data.items()]
-        #         y_axis = [msg for ts, msg in y_axis_data.items()]
-        #
-        # self.main_plot.axes.cla()  # Clear the canvas.
-        # if len(x_axis) == 1 and len(y_axis) == 1:
-        #     # print('x_axis[0], y_axis[0]: ', x_axis[0], y_axis[0])
-        #     # print('x_axis, y_axis: ', x_axis, y_axis)
-        #     self.main_plot.axes.scatter(x_axis, y_axis, color='r')
-        # else:
-        #     self.main_plot.axes.plot(x_axis, y_axis, 'r')
-        # # Trigger the canvas to update and redraw.
-        # self.main_plot.draw()
+        if x_axis_data is None and y_axis_data is None:
+            x_axis = list()
+            y_axis = list()
+            for timestamp, msg in axis_data.items():
+                x_axis.append(timestamp)
+                y_axis.append(msg)
+        else:
+            x_timestamp = list(x_axis_data.keys())
+            y_timestamp = list(y_axis_data.keys())
+            if len(x_timestamp) != len(y_timestamp):
+                min_ts = max([min(x_timestamp), min(y_timestamp)])
+                max_ts = min([max(x_timestamp), max(y_timestamp)])
+                x_axis = [msg for ts, msg in x_axis_data.items() if min_ts <= ts <= max_ts]
+                y_axis = [msg for ts, msg in y_axis_data.items() if min_ts <= ts <= max_ts]
+            else:
+                x_axis = [msg for ts, msg in x_axis_data.items()]
+                y_axis = [msg for ts, msg in y_axis_data.items()]
+
+        self.main_plot.axes.cla()  # Clear the canvas.
+        if len(x_axis) == 1 and len(y_axis) == 1:
+            # print('x_axis[0], y_axis[0]: ', x_axis[0], y_axis[0])
+            # print('x_axis, y_axis: ', x_axis, y_axis)
+            self.main_plot.axes.scatter(x_axis, y_axis, color='r')
+        else:
+            self.main_plot.axes.plot(x_axis, y_axis, 'r')
+        # Trigger the canvas to update and redraw.
+        self.main_plot.draw()
+
+    def add_plot(self, axis_description, plot_title, axis_data=None, x_axis_data=None, y_axis_data=None):
+        # if specific x and y data doesn't declare - display at x axis timestamps, at y axis data from message field
+        if x_axis_data is None and y_axis_data is None:
+            x_axis = list()
+            y_axis = list()
+            for timestamp, msg in axis_data.items():
+                x_axis.append(timestamp)
+                y_axis.append(msg)
+        else:
+            x_timestamp = list(x_axis_data.keys())
+            y_timestamp = list(y_axis_data.keys())
+            if len(x_timestamp) != len(y_timestamp):
+                min_ts = max([min(x_timestamp), min(y_timestamp)])
+                max_ts = min([max(x_timestamp), max(y_timestamp)])
+                x_axis = [msg for ts, msg in x_axis_data.items() if min_ts <= ts <= max_ts]
+                y_axis = [msg for ts, msg in y_axis_data.items() if min_ts <= ts <= max_ts]
+            else:
+                x_axis = [msg for ts, msg in x_axis_data.items()]
+                y_axis = [msg for ts, msg in y_axis_data.items()]
+
+        # draw new plot
+        if len(x_axis) == 1 and len(y_axis) == 1:
+            # print('x_axis[0], y_axis[0]: ', x_axis[0], y_axis[0])
+            # print('x_axis, y_axis: ', x_axis, y_axis)
+            self.main_plot.axes.scatter(x_axis, y_axis, color='r')
+        else:
+            self.main_plot.axes.plot(x_axis, y_axis)
+        # Trigger the canvas to update and redraw.
+        self.main_plot.draw()
 
     def get_current_plot_object(self):
         """

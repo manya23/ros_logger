@@ -3,6 +3,8 @@ from PyQt5.QtCore import *
 from PyQt5 import QtCore
 
 import json
+from gui.dialog_windows import choose_directory_dialog
+from ros_logger_scripts.logging_modules import create_logger_config_file
 
 
 class LoggingSetupWidget(QWidget):
@@ -24,6 +26,9 @@ class LoggingSetupWidget(QWidget):
         # declare main window widgets
         table_info_label = QLabel('Choose topics to start write down messages published there')
 
+        self.empty_config_warning_label = QLabel('Please, check your config file or your ROS environment. There are no topics here.')
+        self.empty_config_warning_label.setVisible(False)
+
         # button to make all checkboxes selected
         self.select_all_button = QPushButton('Select all')
         self.select_all_button.clicked.connect(self.__select_all_checkboxes)
@@ -33,9 +38,10 @@ class LoggingSetupWidget(QWidget):
         self.deselect_all_button = QPushButton('Deselect all')
         self.deselect_all_button.clicked.connect(self.__deselect_all_checkboxes)
 
-        save_config_info_label = QLabel('You can save checked topics to config file')
+        self.save_config_info_label = QLabel('You can save checked topics to config file')
         self.save_config_button = QPushButton('Save to file')
-        self.save_config_button.setEnabled(False)
+        self.save_config_button.clicked.connect(self.__save_new_config_file)
+        # self.save_config_button.setEnabled(False)
 
         self.next_button = QPushButton('Next')
         self.next_button.clicked.connect(self.__go_to_logging_process)
@@ -62,8 +68,9 @@ class LoggingSetupWidget(QWidget):
         log_writing_widget_layout = QVBoxLayout()
         log_writing_widget_layout.addWidget(table_info_label)
         log_writing_widget_layout.addWidget(self.topic_list_display_table)
+        log_writing_widget_layout.addWidget(self.empty_config_warning_label, alignment=Qt.AlignCenter)
         log_writing_widget_layout.addLayout(table_manage_buttons_layout)
-        log_writing_widget_layout.addWidget(save_config_info_label)
+        log_writing_widget_layout.addWidget(self.save_config_info_label)
         log_writing_widget_layout.addWidget(self.save_config_button)
         log_writing_widget_layout.addLayout(widget_manage_buttons_layout)
 
@@ -110,6 +117,15 @@ class LoggingSetupWidget(QWidget):
             self.__add_new_checkbox_point(row_pose, table_label, topic_describe_dict)
             topic_name_list.append(topic_describe_dict['name'])
             self.table_len += 1
+        # in case when there are no topic in config data: displays warning and hide all unnecessary widgets
+        if self.table_len < 1:
+            self.topic_list_display_table.setVisible(False)
+            self.empty_config_warning_label.setVisible(True)
+            self.select_all_button.setVisible(False)
+            self.deselect_all_button.setVisible(False)
+            self.save_config_info_label.setVisible(False)
+            self.save_config_button.setVisible(False)
+            self.next_button.setVisible(False)
 
     def __get_checked_items(self):
         # gather data from selected table items to list
@@ -122,11 +138,27 @@ class LoggingSetupWidget(QWidget):
     def __go_to_logging_process(self):
         self.__get_checked_items()
         # set new widget with choosing of directory to save logs start button
-        self.logging_manage_object.go_to_logging_start_widget()#self.selected_topics)
+        self.logging_manage_object.go_to_logging_start_widget()
 
     def __go_to_previous_widget(self):
+        """
+        Set previous widget active. Clean and reset current widget
+        :return: nothing
+        """
         self.clean_table()
+        self.empty_config_warning_label.setVisible(False)
+        self.topic_list_display_table.setVisible(True)
+        self.select_all_button.setVisible(True)
+        self.deselect_all_button.setVisible(True)
+        self.save_config_info_label.setVisible(True)
+        self.save_config_button.setVisible(True)
+        self.next_button.setVisible(True)
         self.logging_manage_object.go_to_get_topic_list_widget()
+
+    def __save_new_config_file(self):
+        self.__get_checked_items()
+        new_config_file_directory = choose_directory_dialog.choose_directory()
+        create_logger_config_file.save_new_config(self.selected_topics, new_config_file_directory)
 
     def fill_table(self, config_info):
         """

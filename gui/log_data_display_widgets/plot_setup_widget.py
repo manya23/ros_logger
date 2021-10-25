@@ -1,4 +1,5 @@
 #!/usr/bin/python
+import copy
 import time
 import os
 import webbrowser
@@ -23,11 +24,18 @@ class PlotSetupWidget(QWidget):
         super(PlotSetupWidget, self).__init__()
         self.log_display_manage_widget_object = log_display_manage_widget_object
         self.html_plot_path = str()
-        self.x_axis_data = list()
-        self.y_axis_data = list()
+
+        # lists to store current axis data
+        self.x_axis_data = dict()
+        self.y_axis_data = dict()
+        self.all_displayed_plot = list()
+        # dictionary with parsed topics type to display it in axis data choose dialog window
         self.parsed_topic_w_type_dict = list()
+        # dictionary with data parsed in current session
         self.parsed_topic_w_msgs_dict = dict()
         self.log_directory_path = str()
+
+        self.adding_new_plot_flag = False
 
         self.plot_to_save_list = list()
         self.report_name = 'Report_' + str(time.strftime("%H:%M:%S", time.localtime(time.time()))) + '_with_data_'
@@ -53,19 +61,21 @@ class PlotSetupWidget(QWidget):
         self.choose_y_button = QPushButton('Choose Y axis')
         self.choose_y_button.clicked.connect(self.__choose_y_axis)
 
-        self.choose_one_more_x_button = QPushButton('Choose extra X data')
-        self.choose_one_more_x_button.clicked.connect(self.__choose_extra_x)
-        self.choose_one_more_x_button.setEnabled(False)
-        self.choose_one_more_y_button = QPushButton('Choose extra Y data')
-        self.choose_one_more_y_button.clicked.connect(self.__choose_extra_y)
-        self.choose_one_more_y_button.setEnabled(False)
+        self.add_one_more_plot = QPushButton('Add on more plot on graph')
+        self.add_one_more_plot.clicked.connect(self.__add_plot_on_current_graph)
+        # self.choose_one_more_x_button = QPushButton('Choose extra X data')
+        # self.choose_one_more_x_button.clicked.connect(self.__choose_extra_x)
+        # self.choose_one_more_x_button.setEnabled(False)
+        # self.choose_one_more_y_button = QPushButton('Choose extra Y data')
+        # self.choose_one_more_y_button.clicked.connect(self.__choose_extra_y)
+        # self.choose_one_more_y_button.setEnabled(False)
 
         add_x_buttons_layout = QHBoxLayout()
         add_x_buttons_layout.addWidget(self.choose_x_button)
-        add_x_buttons_layout.addWidget(self.choose_one_more_x_button)
+        # add_x_buttons_layout.addWidget(self.choose_one_more_x_button)
         add_y_buttons_layout = QHBoxLayout()
         add_y_buttons_layout.addWidget(self.choose_y_button)
-        add_y_buttons_layout.addWidget(self.choose_one_more_y_button)
+        # add_y_buttons_layout.addWidget(self.choose_one_more_y_button)
 
         self.display_x_axis = QPlainTextEdit('Here will be shown data to display on X axis')
         self.display_x_axis.setReadOnly(True)
@@ -73,6 +83,7 @@ class PlotSetupWidget(QWidget):
         self.display_y_axis.setReadOnly(True)
 
         plot_setup_layout = QVBoxLayout()
+        plot_setup_layout.addWidget(self.add_one_more_plot)
         plot_setup_layout.addLayout(add_x_buttons_layout)
         plot_setup_layout.addWidget(self.display_x_axis)
         plot_setup_layout.addLayout(add_y_buttons_layout)
@@ -95,7 +106,7 @@ class PlotSetupWidget(QWidget):
         self.add_plot_button.clicked.connect(self.__add_plot_to_report)
 
         self.back_button = QPushButton('Back')
-        self.back_button.clicked.connect(self.go_to_previous_widget)
+        self.back_button.clicked.connect(self.__go_to_previous_widget)
 
         manage_plot_layout = QHBoxLayout()
         manage_plot_layout.addWidget(self.save_to_html_button)
@@ -197,7 +208,7 @@ class PlotSetupWidget(QWidget):
 
         self.plot_setup_widget_info.appendPlainText('Please, setup new plot axis')
 
-    def go_to_previous_widget(self):
+    def __go_to_previous_widget(self):
         # TODO: clean all filed widgets
         self.__reset_widgets_parameters()
         self.plot_to_save_list = list()
@@ -218,120 +229,89 @@ class PlotSetupWidget(QWidget):
         self.report_path = str()
         self.plot_preview.clear_plot()
 
+    def __add_plot_on_current_graph(self):
+        """
+        Clear all axis data from axis choosing widgets, but still display it. And append previous plot data to all plot data storage.
+        :return: nothing
+        """
+        # create storage of old axis data
+        self.display_x_axis.setPlainText('Here will be shown data to display on X axis for additional plot')
+        self.display_y_axis.setPlainText('Here will be shown data to display on Y axis for additional plot')
+
+        self.adding_new_plot_flag = True
+        self.all_displayed_plot.append([copy.deepcopy(self.x_axis_data), copy.deepcopy(self.y_axis_data)])
+        self.x_axis_data = dict()
+        self.y_axis_data = dict()
+
     def __choose_x_axis(self):
         self.x_axis_data = self.__choose_axis(self.display_x_axis, 'X')
-
-    def __choose_extra_x(self):
-        self.__choose_extra_axis(self.x_axis_data, self.display_x_axis, 'X')
 
     def __choose_y_axis(self):
         self.y_axis_data = self.__choose_axis(self.display_y_axis, 'Y')
 
-    def __choose_extra_y(self):
-        self.__choose_extra_axis(self.y_axis_data, self.display_y_axis, 'Y')
-
     def __choose_axis(self, display_bar, axis_label):
         """
-        Choose field from messages hierarchy tree to display on one plot axis
+        Choose field from messages hierarchy tree to display on one plot axis. And append new axis data to axis data list.
         :param display_bar: PlainText object to display info about users actions
         :param axis_label: on which data will be displayed
-        :return: axis data object
+        :return: dict with chosen field description: 'field name', 'field data'(contain name of topic, published data and
+        path to required field), 'types'(list of ros messages types required to use when unwrap data from topic)
+
         """
         dlg = choose_data_to_axis_dialog.ChooseAxisData(self.parsed_topic_w_type_dict)
         if dlg.exec():
             dlg.get_checked_items()
-            axis_data = dlg.selected_items
-
-            # set number of selected to manage visibility of axis choosing buttons
-            if axis_label == 'X':
-                self.__choose_number_of_selected_axes(axis_data, self.y_axis_data)
-            elif axis_label == 'Y':
-                self.__choose_number_of_selected_axes(self.x_axis_data, axis_data)
+            axis_data = dlg.selected_items[0]
 
             display_bar.setPlainText('Data to display at {axis}: '.format(axis=axis_label))
 
             # form values with info to display in report
             axis_description = dict()
-            plot_title = axis_data[0]['field name'] + ' field from topic: ' + axis_data[0]['field data']['name']
+            plot_title = axis_data['field name'] + ' field from topic: ' + axis_data['field data']['name']
 
             # depend on chosen for edition axis, reset plot data
             if axis_label == 'X':
                 # form axis description to display at report
-                axis_description.update({'X': ['"' + axis_data[0]['field name'] + '"' + ' from ' + '"' + axis_data[0]['field data']['name'],
+                axis_description.update({'X': ['"' + axis_data['field name'] + '"' + ' from ' + '"' + axis_data['field data']['name'],
                                                self.log_directory_path]})
                 if self.y_axis_data:
-                    axis_description.update({'Y': ['"' + self.y_axis_data[0]['field name'] + '"' + ' from ' + '"' + self.y_axis_data[0]['field data']['name'],
+                    axis_description.update({'Y': ['"' + self.y_axis_data['field name'] + '"' + ' from ' + '"' + self.y_axis_data['field data']['name'],
                                                    self.log_directory_path]})
                 else:
-                    axis_description.update({'Y': ['"' + axis_data[0]['field name'] + '"' + ' timestamps', self.log_directory_path]})
+                    axis_description.update({'Y': ['"' + axis_data['field name'] + '"' + ' timestamps', self.log_directory_path]})
+
                 # then display plot preview
                 self.__set_preview_plot(axis_data, self.y_axis_data, axis_description, plot_title)
+
             elif axis_label == 'Y':
                 # form axis description to display at report
-                axis_description.update({'Y': ['"' + axis_data[0]['field name'] + '"' + ' from ' + '"' + axis_data[0]['field data']['name'],
+                axis_description.update({'Y': ['"' + axis_data['field name'] + '"' + ' from ' + '"' + axis_data['field data']['name'],
                                                self.log_directory_path]})
                 if self.x_axis_data:
-                    axis_description.update({'X': ['"' + self.x_axis_data[0]['field name'] + '"' + ' from ' + '"' + self.x_axis_data[0]['field data']['name'],
+                    axis_description.update({'X': ['"' + self.x_axis_data['field name'] + '"' + ' from ' + '"' + self.x_axis_data['field data']['name'],
                                                    self.log_directory_path]})
                 else:
-                    axis_description.update({'X': ['"' + axis_data[0]['field name'] + '"' + ' timestamps', self.log_directory_path]})
+                    axis_description.update({'X': ['"' + axis_data['field name'] + '"' + ' timestamps', self.log_directory_path]})
+
                 # then display plot preview
                 self.__set_preview_plot(self.x_axis_data, axis_data, axis_description, plot_title)
 
-            self.report_name += axis_data[0]['field name'].replace('/','_') + '_from_'\
-                                + axis_data[0]['field data']['name'].replace('/','_') + '_'
-            self.plot_title += axis_data[0]['field name'] + ' field from topic: ' + axis_data[0]['field data']['name'] + '\n'
+            self.report_name += axis_data['field name'].replace('/','_') + '_from_'\
+                                + axis_data['field data']['name'].replace('/','_') + '_'
+            self.plot_title += axis_data['field name'] + ' field from topic: ' + axis_data['field data']['name'] + '\n'
             self.custom_title_field.setPlainText(self.plot_title)
 
-            axis_data_info = '"' + axis_data[0]['field name'] + '"' + ' from ' + '"' + axis_data[0]['field data']['name']
-            for path_part in axis_data[0]['field data']['path']:
+            axis_data_info = '"' + axis_data['field name'] + '"' + ' from ' + '"' + axis_data['field data']['name']
+            for path_part in axis_data['field data']['path']:
                 axis_data_info += '.' + path_part
             axis_data_info += '"'
             display_bar.appendPlainText(axis_data_info)
 
         else:
-            self.__choose_number_of_selected_axes(self.x_axis_data, self.y_axis_data)
             axis_data = 'You didn\'t select anything'
-            display_bar.setPlainText(axis_data[0])
+            display_bar.setPlainText(axis_data)
 
         return axis_data
-
-    def __choose_extra_axis(self, axis_data, display_bar, axis_label):
-        dlg = choose_data_to_axis_dialog.ChooseAxisData(self.parsed_topic_w_type_dict)
-        # dlg.topic_dict = self.parsed_topic_dict
-        if dlg.exec():
-            dlg.get_checked_items()
-            axis_data.extend(dlg.selected_items)
-            self.__choose_number_of_selected_axes(self.x_axis_data, self.y_axis_data)
-            display_bar.setPlainText('Data to display at {axis}: '.format(axis=axis_label))
-            for msg_field in axis_data:
-                display_bar.appendPlainText(str(msg_field))
-        else:
-            pass
-
-    def __choose_number_of_selected_axes(self, x_axis_data, y_axis_data):
-        # print('data lists len (x,y) : ', len(x_axis_data), len(y_axis_data))
-        if len(x_axis_data) < 1 and len(y_axis_data) < 1:
-            self.choose_one_more_x_button.setEnabled(False)
-            self.choose_one_more_y_button.setEnabled(False)
-
-        if len(x_axis_data) == 1 and len(y_axis_data) == 1:
-            # TODO: что тут происходит, когда выбираешь сначала x, потом y, setEnabled не срабатывает, хотя в условие входит
-            self.choose_one_more_x_button.setEnabled(True)
-            self.choose_one_more_y_button.setEnabled(True)
-            # print('True')
-
-        if len(y_axis_data) >= 2 or len(x_axis_data) >= 2:
-            self.choose_one_more_x_button.setEnabled(False)
-            self.choose_one_more_y_button.setEnabled(False)
-
-        if len(y_axis_data) == 1 and len(x_axis_data) < 1:
-            self.choose_one_more_x_button.setEnabled(False)
-            self.choose_one_more_y_button.setEnabled(True)
-
-        if len(y_axis_data) < 1 and len(x_axis_data) == 1:
-            self.choose_one_more_x_button.setEnabled(True)
-            self.choose_one_more_y_button.setEnabled(False)
 
     def __set_preview_plot(self, x_axis_data, y_axis_data, axis_data_description, plot_title):
         """
@@ -344,30 +324,29 @@ class PlotSetupWidget(QWidget):
         :type plot_title: str
         :return: nothing
         """
-        print('data lists len (x,y) : ', len(x_axis_data), len(y_axis_data))
+
         self.plot_save_flag = False
+        # depend on if 'add plot to current graph' had pressed choosing an action to perform:
+        if self.adding_new_plot_flag:
+            # add plot on current graph
+            update_function = self.plot_preview.add_plot
+        else:
+            # completely update graph
+            update_function = self.plot_preview.update_plot
 
-        if len(x_axis_data) < 1 and len(y_axis_data) < 1:
-            pass
-
-        if len(x_axis_data) == 1 and len(y_axis_data) == 1:
-            x_msg_data_dict = get_data_from_msg.get_data(x_axis_data[0]['field data'], self.parsed_topic_w_msgs_dict)
-            y_msg_data_dict = get_data_from_msg.get_data(y_axis_data[0]['field data'], self.parsed_topic_w_msgs_dict)
+        # set new plot or update old one
+        if len(x_axis_data) == len(y_axis_data):
+            x_msg_data_dict = get_data_from_msg.get_data(x_axis_data['field data'], self.parsed_topic_w_msgs_dict)
+            y_msg_data_dict = get_data_from_msg.get_data(y_axis_data['field data'], self.parsed_topic_w_msgs_dict)
             self.plot_setup_widget_info.appendPlainText('Please, wait. Plot preview is updating.')
-            self.plot_preview.update_plot(axis_data_description, plot_title, x_axis_data=x_msg_data_dict, y_axis_data=y_msg_data_dict)
+            update_function(axis_data_description, plot_title, x_axis_data=x_msg_data_dict, y_axis_data=y_msg_data_dict)
 
-        if len(y_axis_data) >= 2 or len(x_axis_data) >= 2:
-            pass
-
-        if len(y_axis_data) == 1 and len(x_axis_data) < 1:
-            msg_data_dict = get_data_from_msg.get_data(y_axis_data[0]['field data'], self.parsed_topic_w_msgs_dict)
+        if len(x_axis_data) > len(y_axis_data):
+            x_msg_data_dict = get_data_from_msg.get_data(x_axis_data['field data'], self.parsed_topic_w_msgs_dict)
             self.plot_setup_widget_info.appendPlainText('Please, wait. Plot preview is updating.')
-            self.plot_preview.update_plot(axis_data_description, plot_title, axis_data=msg_data_dict)
+            update_function(axis_data_description, plot_title, axis_data=x_msg_data_dict)
 
-        if len(y_axis_data) < 1 and len(x_axis_data) == 1:
-            print('True')
-            msg_data_dict = get_data_from_msg.get_data(x_axis_data[0]['field data'], self.parsed_topic_w_msgs_dict)
+        if len(x_axis_data) < len(y_axis_data):
+            y_msg_data_dict = get_data_from_msg.get_data(y_axis_data['field data'], self.parsed_topic_w_msgs_dict)
             self.plot_setup_widget_info.appendPlainText('Please, wait. Plot preview is updating.')
-            self.plot_preview.update_plot(axis_data_description, plot_title, axis_data=msg_data_dict)
-
-
+            update_function(axis_data_description, plot_title, axis_data=y_msg_data_dict)

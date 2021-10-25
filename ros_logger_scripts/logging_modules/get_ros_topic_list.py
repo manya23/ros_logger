@@ -54,7 +54,7 @@ def get_topic_list_via_nodes():
             msg_type = ''.join(topic[1]).replace('/','.')
             topic_info_dict.update({'type': msg_type})
             # TODO: изменить или дополнить принцип заполнения qos
-            topic_info_dict.update({'qos': 10})
+            topic_info_dict.update({'qos': "rclpy.qos.qos_profile_sensor_data"})
 
             topic_info_list.append(topic_info_dict)
 

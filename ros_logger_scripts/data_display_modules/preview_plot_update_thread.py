@@ -2,6 +2,7 @@ from PyQt5.QtCore import *
 from PyQt5 import QtCore
 from ros_logger_scripts.data_display_modules import get_plot_preview
 
+# TODO: пока не использую эти потоки
 
 class ThreadWorkTask(QObject):
     running = False
@@ -67,7 +68,7 @@ class StartThread(QObject):
         self.__init_thread()
 
     def __init_thread(self):
-        self.update_plot_thread = QThread(parent=self)
+        self.update_plot_thread = QThread()
         self.widget_running_thread = ThreadWorkTask()
         self.widget_running_thread.moveToThread(self.update_plot_thread)
         # self.widget_running_thread.plot_fill_process_signal.connect(self.thread_done)
