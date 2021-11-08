@@ -39,6 +39,7 @@ class LoggingSetupWidget(QWidget):
         self.deselect_all_button.clicked.connect(self.__deselect_all_checkboxes)
 
         self.save_config_info_label = QLabel('You can save checked topics to config file')
+        self.save_config_qos_option_info_label = QLabel('Topics will save to config file with default QOS profile: Sensor data')
         self.save_config_button = QPushButton('Save to file')
         self.save_config_button.clicked.connect(self.__save_new_config_file)
         # self.save_config_button.setEnabled(False)
@@ -72,6 +73,7 @@ class LoggingSetupWidget(QWidget):
         log_writing_widget_layout.addLayout(table_manage_buttons_layout)
         log_writing_widget_layout.addWidget(self.save_config_info_label)
         log_writing_widget_layout.addWidget(self.save_config_button)
+        log_writing_widget_layout.addWidget(self.save_config_qos_option_info_label)
         log_writing_widget_layout.addLayout(widget_manage_buttons_layout)
 
         self.setLayout(log_writing_widget_layout)
@@ -108,6 +110,7 @@ class LoggingSetupWidget(QWidget):
         topic_name_list = list()
         # fill table fields with info from config file
         for topic_describe_dict in config:
+            # TODO: шо это такое ??
             if topic_describe_dict['name'] in topic_name_list:
                 continue
             row_pose = self.topic_list_display_table.rowCount()
@@ -125,6 +128,7 @@ class LoggingSetupWidget(QWidget):
             self.deselect_all_button.setVisible(False)
             self.save_config_info_label.setVisible(False)
             self.save_config_button.setVisible(False)
+            self.save_config_qos_option_info_label.setVisible(False)
             self.next_button.setVisible(False)
 
     def __get_checked_items(self):
@@ -152,6 +156,7 @@ class LoggingSetupWidget(QWidget):
         self.deselect_all_button.setVisible(True)
         self.save_config_info_label.setVisible(True)
         self.save_config_button.setVisible(True)
+        self.save_config_qos_option_info_label.setVisible(True)
         self.next_button.setVisible(True)
         self.logging_manage_object.go_to_get_topic_list_widget()
 

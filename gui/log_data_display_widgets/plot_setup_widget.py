@@ -35,7 +35,10 @@ class PlotSetupWidget(QWidget):
         self.parsed_topic_w_msgs_dict = dict()
         self.log_directory_path = str()
 
+        # indicates type of graph upgrade mode
         self.adding_new_plot_flag = False
+        # indicates number of plots on current graph
+        self.multiply_append_flag = False
 
         self.plot_to_save_list = list()
         self.report_name = 'Report_' + str(time.strftime("%H:%M:%S", time.localtime(time.time()))) + '_with_data_'
@@ -63,19 +66,11 @@ class PlotSetupWidget(QWidget):
 
         self.add_one_more_plot = QPushButton('Add on more plot on graph')
         self.add_one_more_plot.clicked.connect(self.__add_plot_on_current_graph)
-        # self.choose_one_more_x_button = QPushButton('Choose extra X data')
-        # self.choose_one_more_x_button.clicked.connect(self.__choose_extra_x)
-        # self.choose_one_more_x_button.setEnabled(False)
-        # self.choose_one_more_y_button = QPushButton('Choose extra Y data')
-        # self.choose_one_more_y_button.clicked.connect(self.__choose_extra_y)
-        # self.choose_one_more_y_button.setEnabled(False)
 
         add_x_buttons_layout = QHBoxLayout()
         add_x_buttons_layout.addWidget(self.choose_x_button)
-        # add_x_buttons_layout.addWidget(self.choose_one_more_x_button)
         add_y_buttons_layout = QHBoxLayout()
         add_y_buttons_layout.addWidget(self.choose_y_button)
-        # add_y_buttons_layout.addWidget(self.choose_one_more_y_button)
 
         self.display_x_axis = QPlainTextEdit('Here will be shown data to display on X axis')
         self.display_x_axis.setReadOnly(True)
@@ -138,6 +133,7 @@ class PlotSetupWidget(QWidget):
         self.__save_report()
         self.pdf_dir_path = choose_directory_dialog.choose_directory()
 
+        # form plot file name from report(saved in metadata) name
         pure_report_file_name = str()
         for char in self.report_path[-2::-1]:
             if char != '/':
@@ -158,6 +154,8 @@ class PlotSetupWidget(QWidget):
         self.__save_report()
         # choose directory to save report as .html file
         self.html_dir_path = choose_directory_dialog.choose_directory()
+
+        # form plot file name from report(saved in metadata) name
         pure_report_file_name = str()
         for char in self.report_path[-2::-1]:
             if char != '/':
@@ -239,6 +237,7 @@ class PlotSetupWidget(QWidget):
         self.display_y_axis.setPlainText('Here will be shown data to display on Y axis for additional plot')
 
         self.adding_new_plot_flag = True
+        self.multiply_append_flag = True
         self.all_displayed_plot.append([copy.deepcopy(self.x_axis_data), copy.deepcopy(self.y_axis_data)])
         self.x_axis_data = dict()
         self.y_axis_data = dict()
@@ -334,19 +333,34 @@ class PlotSetupWidget(QWidget):
             # completely update graph
             update_function = self.plot_preview.update_plot
 
+        # form temporary list of plots to update
+        temp_plot_list = copy.deepcopy(self.all_displayed_plot)
+        temp_plot_list.append([x_axis_data, y_axis_data])
+        print('temp plot list len: ', len(temp_plot_list))
+
         # set new plot or update old one
-        if len(x_axis_data) == len(y_axis_data):
+        if len(x_axis_data) == len(y_axis_data) and self.multiply_append_flag is False:
             x_msg_data_dict = get_data_from_msg.get_data(x_axis_data['field data'], self.parsed_topic_w_msgs_dict)
             y_msg_data_dict = get_data_from_msg.get_data(y_axis_data['field data'], self.parsed_topic_w_msgs_dict)
             self.plot_setup_widget_info.appendPlainText('Please, wait. Plot preview is updating.')
+            time.sleep(1)
             update_function(axis_data_description, plot_title, x_axis_data=x_msg_data_dict, y_axis_data=y_msg_data_dict)
 
-        if len(x_axis_data) > len(y_axis_data):
+        if len(x_axis_data) > len(y_axis_data) and self.multiply_append_flag is False:
             x_msg_data_dict = get_data_from_msg.get_data(x_axis_data['field data'], self.parsed_topic_w_msgs_dict)
             self.plot_setup_widget_info.appendPlainText('Please, wait. Plot preview is updating.')
+            time.sleep(1)
             update_function(axis_data_description, plot_title, axis_data=x_msg_data_dict)
 
-        if len(x_axis_data) < len(y_axis_data):
+        if len(x_axis_data) < len(y_axis_data) and self.multiply_append_flag is False:
             y_msg_data_dict = get_data_from_msg.get_data(y_axis_data['field data'], self.parsed_topic_w_msgs_dict)
             self.plot_setup_widget_info.appendPlainText('Please, wait. Plot preview is updating.')
+            time.sleep(1)
             update_function(axis_data_description, plot_title, axis_data=y_msg_data_dict)
+
+        if self.multiply_append_flag is True:
+            self.plot_setup_widget_info.appendPlainText('Please, wait. Plot preview is updating.')
+            time.sleep(1)
+            self.plot_preview.multiply_update_plot(axis_data_description, plot_title, temp_plot_list, self.parsed_topic_w_msgs_dict)
+
+        self.adding_new_plot_flag = False

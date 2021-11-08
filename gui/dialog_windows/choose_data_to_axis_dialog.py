@@ -15,6 +15,9 @@ common_field_type = get_common_types_list()
 
 # open dialog window to directory choosing and return chosen path
 class ChooseAxisData(QDialog):
+    """
+    Fills QTree widget with unwrap ROS messages fields. It uses messages types that presented at logged topic messages
+    """
     def __init__(self, topic_dict):
         super().__init__()
         self.topic_dict = topic_dict
@@ -46,21 +49,13 @@ class ChooseAxisData(QDialog):
         for topic_name in self.topic_dict:
             parent = QTreeWidgetItem(self.tree)
             parent.setText(0, "Messages from {}".format(topic_name))
-            # parent.setFlags(parent.flags() | Qt.ItemIsTristate | Qt.ItemIsUserCheckable)
 
             child = QTreeWidgetItem(parent)
             child.setText(0, "{}".format(self.topic_dict[topic_name]))
 
-            # TODO: тут заполнять поля сообщения, которые есть у сообщения с типом self.topic_dict[topic_name]
             # print(self.topic_dict[topic_name])
             fill_ros_msg_to_tree_branch(child, self.topic_dict[topic_name], topic_name, path_to_field = [], branch_depth=0,
                                         parent_msg_types=list())
-            # for x in range(5):
-            #     sub_child = QTreeWidgetItem(child)
-            #     sub_child.setFlags(sub_child.flags() | Qt.ItemIsUserCheckable)
-            #     sub_child.setText(0, "Msg field {}".format(x))
-            #     sub_child.setCheckState(0, Qt.Unchecked)
-            #     sub_child.setData(0, Qt.UserRole, 'hii')
 
     def get_checked_items(self):
         self.selected_items = list()
@@ -87,10 +82,6 @@ def fill_ros_msg_to_tree_branch(parent_branch, ros_msg_type, topic_name, path_to
         child = QTreeWidgetItem(parent_branch)
         child.setText(0, "{}".format(field))
         field_type = msg_fields_list[field]
-        # if branch_depth != 0:
-        #     path_to_field += '.' + field
-        # else:
-        #     path_to_field += field
         path_to_field.append(field)
         # TODO: будет ли это стабильно работать -> в случае ошибки сделать запрос ручного ввода
         if 'sequence' in field_type:
@@ -114,11 +105,15 @@ def fill_ros_msg_to_tree_branch(parent_branch, ros_msg_type, topic_name, path_to
             child.setFlags(child.flags() | Qt.ItemIsUserCheckable)
             child.setCheckState(0, Qt.Unchecked)
             child.setData(0, Qt.UserRole, data)
-            # [topic_name, path_to_field, f'{ros_msg_type}.{field}']
         path_to_field = copy.deepcopy(parent_path_to_field)
 
 
 def import_msg_lib(topic_dict):
+    """
+    Performs import of libraries that required to unwrap messages.
+    :param topic_dict: Dictionary where key - topic name, value - type of messages published there
+    :return: nothing
+    """
     msg_to_import = list()
     for topic_name, msg_type in topic_dict.items():
         msg_type_module_name = str()
